@@ -1,27 +1,27 @@
 import orderModel from "../models/orderModel.js";
 import userModel from "../models/userModel.js";
 
-// placing order using Instagram/manual method
+// ================== PLACE ORDER (Manual / Instagram) ==================
 const placeOrder = async (req, res) => {
   try {
-    const { userId, items, amountPaid, address, paymentMethod } = req.body;
+    const { items, amountPaid, address, paymentMethod } = req.body;
+    const userId = req.user.id; // from auth middleware
 
     const orderData = {
       userId,
       items,
-      amount: amountPaid,        // total amount
+      amount: amountPaid,
       amountPaid,
       address,
       paymentMethod,
-      payment: false,            // payment not verified yet (admin will verify)
-      status: "Pending",         // default for your manual flow
+      payment: false,
+      status: "Pending",
       date: Date.now()
     };
 
     const newOrder = new orderModel(orderData);
     await newOrder.save();
 
-    // clear cart
     await userModel.findByIdAndUpdate(userId, { cartData: {} });
 
     res.json({ success: true, message: "Order placed successfully" });
@@ -31,39 +31,67 @@ const placeOrder = async (req, res) => {
   }
 };
 
-
-// placing order using stripe Method
+// ================== STRIPE (NOT USED NOW) ==================
 const placeOrderStripe = async (req, res) => {
-}
+  res.json({ success: false, message: "Stripe not enabled" });
+};
 
-// placing order using Razorpay Method
+// ================== RAZORPAY (NOT USED NOW) ==================
 const placeOrderRazorpay = async (req, res) => {
-}
+  res.json({ success: false, message: "Razorpay not enabled" });
+};
 
-// ALL orders data for admin page
-
+// ================== ADMIN: ALL ORDERS ==================
 const allOrders = async (req, res) => {
+  try {
+    const orders = await orderModel.find({}).sort({ date: -1 });
+    res.json({ success: true, orders });
+  } catch (error) {
+    res.json({ success: false, message: error.message });
+  }
+};
 
-}
-
-
-// ALL userdata for frontend page
-
+// ================== USER: MY ORDERS ==================
 const userOrders = async (req, res) => {
-    try {
-      const userId = req.user.id; // authUser middleware should set req.user
-      const orders = await orderModel.find({ userId });
-      res.json({ success: true, orders });
-    } catch (error) {
-      res.json({ success: false, message: error.message });
-    }
-  };
-  
+  try {
+    const orders = await orderModel
+      .find({ userId: req.user.id })
+      .sort({ date: -1 });
 
-//update order status from admin panel
+    res.json({ success: true, orders });
+  } catch (error) {
+    res.json({ success: false, message: error.message });
+  }
+};
 
+// ================== ADMIN: UPDATE STATUS ==================
 const updateStatus = async (req, res) => {
+  try {
+    const { orderId, status, reason } = req.body;
 
-}
+    const updateData = { status };
 
-export {placeOrder,placeOrderRazorpay,placeOrderStripe,allOrders,userOrders,updateStatus}
+    if (status === "Cancelled") {
+      updateData.cancelReason = reason || "Cancelled by admin";
+    }
+
+    if (status === "Confirmed") {
+      updateData.payment = true;
+    }
+
+    await orderModel.findByIdAndUpdate(orderId, updateData);
+
+    res.json({ success: true, message: "Order status updated" });
+  } catch (error) {
+    res.json({ success: false, message: error.message });
+  }
+};
+
+export {
+  placeOrder,
+  placeOrderRazorpay,
+  placeOrderStripe,
+  allOrders,
+  userOrders,
+  updateStatus
+};
