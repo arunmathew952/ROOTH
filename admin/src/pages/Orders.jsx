@@ -1,49 +1,26 @@
-import orderModel from "../models/orderModel.js";
+import { useEffect, useState } from "react";
+import axios from "axios";
 
-// Get all orders (admin)
-const allOrders = async (req, res) => {
-  try {
-    const orders = await orderModel.find({});
-    res.json({ success: true, orders });
-  } catch (error) {
-    res.json({ success: false, message: error.message });
-  }
+const Orders = () => {
+  const [orders, setOrders] = useState([]);
+
+  useEffect(() => {
+    axios.get("http://localhost:5000/api/order/all")
+      .then(res => setOrders(res.data.orders));
+  }, []);
+
+  return (
+    <div>
+      <h1>Admin Orders</h1>
+      {orders.map(order => (
+        <div key={order._id}>
+          <p>Status: {order.status}</p>
+          <button>Approve</button>
+          <button>Cancel</button>
+        </div>
+      ))}
+    </div>
+  );
 };
 
-// Approve order (admin)
-const approveOrder = async (req, res) => {
-  try {
-    const { orderId } = req.body;
-
-    const order = await orderModel.findById(orderId);
-    if (!order) return res.json({ success: false, message: "Order not found" });
-
-    order.status = "Confirmed";
-    order.payment = true;
-    await order.save();
-
-    res.json({ success: true, message: "Order confirmed" });
-  } catch (error) {
-    res.json({ success: false, message: error.message });
-  }
-};
-
-// Cancel order (admin)
-const cancelOrder = async (req, res) => {
-  try {
-    const { orderId, reason } = req.body;
-
-    const order = await orderModel.findById(orderId);
-    if (!order) return res.json({ success: false, message: "Order not found" });
-
-    order.status = "Cancelled";
-    order.cancelReason = reason;
-    await order.save();
-
-    res.json({ success: true, message: "Order cancelled" });
-  } catch (error) {
-    res.json({ success: false, message: error.message });
-  }
-};
-
-export { allOrders, approveOrder, cancelOrder };
+export default Orders;
