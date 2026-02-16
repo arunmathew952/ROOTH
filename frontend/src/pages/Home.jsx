@@ -4,7 +4,7 @@ import LatestCollection from '../components/LatestCollection'
 import Bestseller from '../components/Bestseller'
 import MaternityClothes from '../components/MaternityClothes'
 import OurPolicy from '../components/OurPolicy'
-import Footer from '../components/footer'
+import Footer from '../components/Footer'
 
 const home = () => {
   return (
@@ -14,7 +14,7 @@ const home = () => {
       <Bestseller/>
       <MaternityClothes/>
       <OurPolicy/>
-      
+      <Footer/>
       </div>
   )
 }
