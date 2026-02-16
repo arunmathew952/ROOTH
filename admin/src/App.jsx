@@ -3,10 +3,10 @@ import Navbar from "./components/Navbar.jsx";
 import "./index.css";
 import Sidebar from "./components/Sidebar.jsx";
 import { Routes, Route } from "react-router-dom";
-import Add from "./pages/add.jsx";
+import Add from "./pages/Add.jsx";
 import List from "./pages/List.jsx";
 import Orders from "./pages/Orders.jsx";
-import Login from "./components/login.jsx";
+import Login from "./components/Login.jsx";
 import { ToastContainer } from 'react-toastify';
 
  export const backendUrl = import.meta.env.VITE_BACKEND_URL
